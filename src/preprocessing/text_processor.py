@@ -1,7 +1,6 @@
 import re
 import emoji
 import nltk
-from typing import List, Dict, Optional
 from nltk.tokenize import word_tokenize
 from nltk.corpus import stopwords
 from nltk.stem import WordNetLemmatizer
@@ -61,15 +60,15 @@ class TextPreprocessor:
         
         return text
     
-    def tokenize(self, text: str) -> List[str]:
+    def tokenize(self, text: str) -> list[str]:
         return word_tokenize(text)
     
-    def remove_stopwords_from_tokens(self, tokens: List[str]) -> List[str]:
+    def remove_stopwords_from_tokens(self, tokens: list[str]) -> list[str]:
         if not self.remove_stopwords:
             return tokens
         return [token for token in tokens if token not in self.stop_words]
     
-    def lemmatize_tokens(self, tokens: List[str]) -> List[str]:
+    def lemmatize_tokens(self, tokens: list[str]) -> list[str]:
         if not self.lemmatize:
             return tokens
         return [self.lemmatizer.lemmatize(token) for token in tokens]
@@ -87,7 +86,7 @@ class TextPreprocessor:
         
         return ' '.join(tokens)
     
-    def preprocess_batch(self, texts: List[str]) -> List[str]:
+    def preprocess_batch(self, texts: list[str]) -> list[str]:
         return [self.preprocess(text) for text in texts]
 
 
@@ -95,7 +94,7 @@ class FeatureExtractor:
     def __init__(self):
         self.preprocessor = TextPreprocessor()
     
-    def extract_features(self, text: str) -> Dict[str, any]:
+    def extract_features(self, text: str) -> dict[str, any]:
         features = {}
         
         features['original_length'] = len(text)
@@ -121,7 +120,7 @@ class FeatureExtractor:
         
         return features
     
-    def extract_features_batch(self, texts: List[str]) -> List[Dict[str, any]]:
+    def extract_features_batch(self, texts: list[str]) -> list[dict[str, any]]:
         return [self.extract_features(text) for text in texts]
 
 

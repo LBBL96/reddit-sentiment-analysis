@@ -1,8 +1,7 @@
 from datetime import datetime, timedelta
 import logging
-from typing import Optional, Dict, List
 from sqlalchemy.orm import Session
-from sqlalchemy import func, and_
+from sqlalchemy import and_
 from src.database.database import SessionLocal
 from src.database.models import Tweet, TrainingData, ModelMetrics
 from src.model_training.trainer import SentimentModelTrainer, sentiment_to_label
@@ -17,7 +16,7 @@ logger = logging.getLogger(__name__)
 class RetrainingPipeline:
     def __init__(
         self,
-        min_samples: int = None,
+        min_samples: int | None = None,
         model_save_dir: str = "./trained_models"
     ):
         self.min_samples = min_samples or settings.min_samples_for_retrain
@@ -64,10 +63,10 @@ class RetrainingPipeline:
     
     def train_new_model(
         self,
-        texts: List[str],
-        labels: List[int],
-        version: Optional[str] = None
-    ) -> Dict:
+        texts: list[str],
+        labels: list[int],
+        version: str | None = None
+    ) -> dict:
         version = version or datetime.now().strftime("%Y%m%d_%H%M%S")
         
         self.tracker.start_run(
@@ -126,7 +125,7 @@ class RetrainingPipeline:
             'training_samples': len(texts)
         }
     
-    def save_model_metrics(self, db: Session, training_result: Dict):
+    def save_model_metrics(self, db: Session, training_result: dict):
         metrics = training_result['metrics']
         
         model_metrics = ModelMetrics(
@@ -154,7 +153,7 @@ class RetrainingPipeline:
         db.commit()
         logger.info("Marked training data as used")
     
-    def run_retraining_cycle(self) -> Optional[Dict]:
+    def run_retraining_cycle(self) -> dict | None:
         db = SessionLocal()
         try:
             if not self.check_retraining_needed(db):
@@ -182,7 +181,7 @@ class RetrainingPipeline:
         finally:
             db.close()
     
-    def get_best_model(self, db: Session) -> Optional[ModelMetrics]:
+    def get_best_model(self, db: Session) -> ModelMetrics | None:
         best_model = db.query(ModelMetrics).order_by(
             ModelMetrics.f1_score.desc()
         ).first()
@@ -194,7 +193,7 @@ class DataQualityMonitor:
     def __init__(self, db: Session):
         self.db = db
     
-    def check_data_drift(self, window_hours: int = 24) -> Dict:
+    def check_data_drift(self, window_hours: int = 24) -> dict:
         cutoff_time = datetime.utcnow() - timedelta(hours=window_hours)
         
         recent_tweets = self.db.query(Tweet).filter(
@@ -229,7 +228,7 @@ class DataQualityMonitor:
             'window_hours': window_hours
         }
     
-    def check_model_performance(self, window_hours: int = 24) -> Dict:
+    def check_model_performance(self, window_hours: int = 24) -> dict:
         cutoff_time = datetime.utcnow() - timedelta(hours=window_hours)
         
         recent_predictions = self.db.query(Tweet).filter(

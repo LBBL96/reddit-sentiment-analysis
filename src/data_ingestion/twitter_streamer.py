@@ -1,9 +1,7 @@
 import tweepy
-import json
 import logging
-from typing import Callable, Optional, List
+from collections.abc import Callable
 from datetime import datetime
-from sqlalchemy.orm import Session
 from config import settings
 from src.database.models import Tweet
 from src.database.database import SessionLocal
@@ -16,7 +14,7 @@ class TweetStreamListener(tweepy.StreamingClient):
     def __init__(
         self,
         bearer_token: str,
-        callback: Optional[Callable] = None,
+        callback: Callable | None = None,
         save_to_db: bool = True,
         **kwargs
     ):
@@ -72,7 +70,7 @@ class TwitterStreamManager:
         
     def setup_stream(
         self,
-        callback: Optional[Callable] = None,
+        callback: Callable | None = None,
         save_to_db: bool = True
     ) -> TweetStreamListener:
         self.stream = TweetStreamListener(
@@ -82,7 +80,7 @@ class TwitterStreamManager:
         )
         return self.stream
     
-    def add_rules(self, keywords: List[str], tag: Optional[str] = None):
+    def add_rules(self, keywords: list[str], tag: str | None = None):
         rules = []
         for keyword in keywords:
             rule_value = f"{keyword} lang:en -is:retweet"
@@ -111,8 +109,8 @@ class TwitterStreamManager:
     
     def start_stream(
         self,
-        keywords: List[str],
-        callback: Optional[Callable] = None,
+        keywords: list[str],
+        callback: Callable | None = None,
         save_to_db: bool = True,
         clear_existing: bool = True
     ):

@@ -1,7 +1,6 @@
 from fastapi import FastAPI, HTTPException, Depends, BackgroundTasks
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel, Field
-from typing import List, Optional, Dict
 from datetime import datetime
 from sqlalchemy.orm import Session
 import logging
@@ -36,7 +35,7 @@ prediction_counter = Counter('sentiment_predictions_total', 'Total sentiment pre
 prediction_duration = Histogram('sentiment_prediction_duration_seconds', 'Prediction duration')
 model_confidence = Histogram('sentiment_prediction_confidence', 'Prediction confidence scores')
 
-model_trainer: Optional[SentimentModelTrainer] = None
+model_trainer: SentimentModelTrainer | None = None
 
 
 class PredictionRequest(BaseModel):
@@ -44,7 +43,7 @@ class PredictionRequest(BaseModel):
 
 
 class BatchPredictionRequest(BaseModel):
-    texts: List[str] = Field(..., max_items=100, description="List of texts to analyze")
+    texts: list[str] = Field(..., max_items=100, description="List of texts to analyze")
 
 
 class PredictionResponse(BaseModel):
@@ -52,15 +51,15 @@ class PredictionResponse(BaseModel):
     sentiment: str
     label: int
     confidence: float
-    probabilities: Dict[str, float]
-    model_version: Optional[str] = None
+    probabilities: dict[str, float]
+    model_version: str | None = None
     timestamp: datetime
 
 
 class HealthResponse(BaseModel):
     status: str
     model_loaded: bool
-    model_version: Optional[str] = None
+    model_version: str | None = None
     timestamp: datetime
 
 
@@ -95,7 +94,7 @@ async def startup_event():
         model_trainer = SentimentModelTrainer()
 
 
-@app.get("/", response_model=Dict)
+@app.get("/", response_model=dict)
 async def root():
     return {
         "message": "Twitter Sentiment Analysis API",
@@ -180,7 +179,7 @@ async def predict_sentiment(request: PredictionRequest, db: Session = Depends(ge
         raise HTTPException(status_code=500, detail=f"Prediction failed: {str(e)}")
 
 
-@app.post("/predict/batch", response_model=List[PredictionResponse])
+@app.post("/predict/batch", response_model=list[PredictionResponse])
 async def batch_predict_sentiment(
     request: BatchPredictionRequest,
     db: Session = Depends(get_db)

@@ -10,10 +10,7 @@ from transformers import (
 )
 from sklearn.model_selection import train_test_split
 from sklearn.metrics import accuracy_score, precision_recall_fscore_support
-import numpy as np
-import pandas as pd
 from datetime import datetime
-from typing import Dict, List, Tuple, Optional
 import logging
 from config import settings
 
@@ -22,7 +19,7 @@ logger = logging.getLogger(__name__)
 
 
 class SentimentDataset(Dataset):
-    def __init__(self, texts: List[str], labels: List[int], tokenizer, max_length: int = 128):
+    def __init__(self, texts: list[str], labels: list[int], tokenizer, max_length: int = 128):
         self.texts = texts
         self.labels = labels
         self.tokenizer = tokenizer
@@ -55,7 +52,7 @@ class SentimentDataset(Dataset):
 class SentimentModelTrainer:
     def __init__(
         self,
-        model_name: str = None,
+        model_name: str | None = None,
         num_labels: int = 3,
         max_length: int = 128,
         output_dir: str = "./model_checkpoints"
@@ -73,11 +70,11 @@ class SentimentModelTrainer:
     
     def prepare_data(
         self,
-        texts: List[str],
-        labels: List[int],
+        texts: list[str],
+        labels: list[int],
         test_size: float = 0.2,
         val_size: float = 0.1
-    ) -> Tuple[SentimentDataset, SentimentDataset, SentimentDataset]:
+    ) -> tuple[SentimentDataset, SentimentDataset, SentimentDataset]:
         X_train, X_test, y_train, y_test = train_test_split(
             texts, labels, test_size=test_size, random_state=42, stratify=labels
         )
@@ -114,13 +111,13 @@ class SentimentModelTrainer:
         self,
         train_dataset: SentimentDataset,
         val_dataset: SentimentDataset,
-        learning_rate: float = None,
-        num_epochs: int = None,
-        batch_size: int = None,
+        learning_rate: float | None = None,
+        num_epochs: int | None = None,
+        batch_size: int | None = None,
         warmup_steps: int = 500,
         weight_decay: float = 0.01,
         early_stopping_patience: int = 3
-    ) -> Dict:
+    ) -> dict:
         learning_rate = learning_rate or settings.learning_rate
         num_epochs = num_epochs or settings.num_epochs
         batch_size = batch_size or settings.batch_size
@@ -164,7 +161,7 @@ class SentimentModelTrainer:
         logger.info("Training completed!")
         return train_result.metrics
     
-    def evaluate(self, test_dataset: SentimentDataset) -> Dict:
+    def evaluate(self, test_dataset: SentimentDataset) -> dict:
         if self.trainer is None:
             raise ValueError("Model must be trained before evaluation")
         
@@ -173,7 +170,7 @@ class SentimentModelTrainer:
         
         return eval_result
     
-    def save_model(self, save_path: str, version: str = None):
+    def save_model(self, save_path: str, version: str | None = None):
         if self.model is None:
             raise ValueError("No model to save")
         
@@ -193,7 +190,7 @@ class SentimentModelTrainer:
         self.model = AutoModelForSequenceClassification.from_pretrained(model_path)
         self.tokenizer = AutoTokenizer.from_pretrained(model_path)
         
-    def predict(self, texts: List[str]) -> List[Dict]:
+    def predict(self, texts: list[str]) -> list[dict]:
         if self.model is None:
             raise ValueError("Model must be loaded or trained before prediction")
         
